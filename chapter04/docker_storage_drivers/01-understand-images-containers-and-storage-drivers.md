@@ -258,4 +258,87 @@ When you are done, the Dockerfile contains two lines:
 ![sharing-layers.jpg](https://docs.docker.com/engine/userguide/storagedriver/images/sharing-layers.jpg)
 
 当容器中的某个已存在文件被修改， docker会使用存储驱动执行一次 copy-on-write 操作。 这特殊的操作依赖于磁盘驱动类型。 对于 AUFS 和 OverlayFS 存储驱动而言， copy-on-write 操作步骤差不多就是下面这样的：
-+ 
++ 在镜像层中查找需要更新的文件。 进程会从最上面的、最新的层开始，逐渐向下面的层中查找。
++ 一旦找到该文件， 则执行 “ copy-up ” 操作，将找到的第一份文件副本复制到容器自己的可写层中。
++ 在容器可写层中修改被复制的*文件副本*。
+
+Btrf、ZFS或其他驱动器处理 ` copy-on-write ` 的方式不同。 在以后的文档中，你可以了解更多关于这些驱动器处理的具体细节。
+
+容器写入大量数据时需要消耗的空间比容器不写入时更多。因为大部分写入操作会消耗容器可写层中的新空间。如果你的容器需要执行大量写入操作， 那么你应该考虑使用数据卷。
+
+` copy-up ` 操作会导致明显的性能开销。该开销依赖于使用的存储驱动不同而不同。然而， 大型文件、过多的镜像层、过深的目录结构造成的影响会更加明显。 幸运的是，该操作只会发生在任何特定的文件第一次被修改时；在此之后，修改同一个文件不会在执行 copy-up 操作；且能够直接在容器层中修改已经存在的文件副本。
+
+让我们来看一下，如果同时启动5个基于 ` changed-ubuntu ` 镜像的容器会发生什么：
+1. 在终端使用 ` docker run ` 命令 5 次。 
+```
+ $ docker run -dit changed-ubuntu bash
+
+ 75bab0d54f3cf193cfdc3a86483466363f442fba30859f7dcd1b816b6ede82d4
+
+ $ docker run -dit changed-ubuntu bash
+
+ 9280e777d109e2eb4b13ab211553516124a3d4d4280a0edfc7abf75c59024d47
+
+ $ docker run -dit changed-ubuntu bash
+
+ a651680bd6c2ef64902e154eeb8a064b85c9abf08ac46f922ad8dfc11bb5cd8a
+
+ $ docker run -dit changed-ubuntu bash
+
+ 8eb24b3b2d246f225b24f2fca39625aaad71689c392a7b552b78baf264647373
+
+ $ docker run -dit changed-ubuntu bash
+
+ 0ad25d06bdf6fca0dedc38301b2aff7478b3e1ce3d1acd676573bba57cb1cfef
+ 
+```
+
+启动了5个基于 ` changed-ubuntu ` 镜像的容器。每个容器被创建时，docker都添加了一个可写层并分配了一个随机的UUID。这些值通过 ` docker run ` 命令被返回。
+
+2. 使用 ` docker ps ` 命令确认 5 个容器都在运行。
+```
+ $ docker ps
+ CONTAINER ID    IMAGE             COMMAND    CREATED              STATUS              PORTS    NAMES
+ 0ad25d06bdf6    changed-ubuntu    "bash"     About a minute ago   Up About a minute            stoic_ptolemy
+ 8eb24b3b2d24    changed-ubuntu    "bash"     About a minute ago   Up About a minute            pensive_bartik
+ a651680bd6c2    changed-ubuntu    "bash"     2 minutes ago        Up 2 minutes                 hopeful_turing
+ 9280e777d109    changed-ubuntu    "bash"     2 minutes ago        Up 2 minutes                 backstabbing_mahavira
+ 75bab0d54f3c    changed-ubuntu    "bash"     2 minutes ago        Up 2 minutes                 boring_pasteur
+
+```
+
+输出显示 5 个容器都在运行，且共享 ` changed-ubuntu ` 镜像。 每个 ` CONTAINER ID ` 都来自于各自创建容器的 UUID 。
+
+3. 查看本经存储区域的内容
+```
+
+ $ sudo ls /var/lib/docker/containers
+
+ 0ad25d06bdf6fca0dedc38301b2aff7478b3e1ce3d1acd676573bba57cb1cfef
+ 9280e777d109e2eb4b13ab211553516124a3d4d4280a0edfc7abf75c59024d47
+ 75bab0d54f3cf193cfdc3a86483466363f442fba30859f7dcd1b816b6ede82d4
+ a651680bd6c2ef64902e154eeb8a064b85c9abf08ac46f922ad8dfc11bb5cd8a
+ 8eb24b3b2d246f225b24f2fca39625aaad71689c392a7b552b78baf264647373
+
+```
+docker的 copy-on-write 策略不仅减少了容器消耗的空间，同时也减少了启动容器所需要的时间。在启动容器时， 的哦此可忍只需要创建每个容器的可写层。 下图展示了5个容器共享一个只读(RO)的 ` changed-ubuntu `镜像副本：
+
+![shared-uuid.jpg](https://docs.docker.com/engine/userguide/storagedriver/images/shared-uuid.jpg)
+
+如果docker每次启动容器时都必须完成复制一份底层镜像堆栈，那么容器启动时间和磁盘消耗会显著增长。
+
+
+## 数据卷和存储驱动
+
+当容器被删除时， 任何写入容器但不是被保存在 *数据卷* 中的数据也会被删除。
+
+数据卷是docker主机本地的一个目录或文件，通过挂载的方式作用于容器。 数据卷不是通过存储驱动控制； 读、写数据会跳过存储驱动直接在本地主机操作。 你可以挂载任意多个数据卷到容器中。 多个容器可以共享一个或多个数据卷。
+
+下图展示了一个docker主机上运行了两个容器。 每个容器在docker主机本地数据区(`/var/lib/docker/...`)内拥有自己的地址空间。 docker主机也将 `/data` 目录作为数据卷，同时挂再到两个容器中。
+
+![https://docs.docker.com/engine/userguide/storagedriver/images/shared-volume.jpg](https://docs.docker.com/engine/userguide/storagedriver/images/shared-volume.jpg)
+
+数据卷属于外部的docker主机，且独立于容器的存储驱动控制。当容器被删除时， 保存在数据卷的数据会持续保存在docker主机中。
+
+更多关于数据卷的详细信息，参考 [管理容器数据](../../chapter03/05-manage-data-in-containers.md)
+
