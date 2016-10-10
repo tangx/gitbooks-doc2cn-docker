@@ -46,9 +46,13 @@ docker 1.10之前版本创建和pull的镜像，如果需要使用新模块需�
 移植工具作为一个容器，由docker.inc提供。下载地址：https://github.com/docker/v1.10-migrator/releases。
 
 启动“migrator”镜像时需要将docker主机的数据目录暴露给容器。如果你使用的是默认docker数据路径，命令如下：
+
 ```bash
+
 $ sudo docker run --rm -v /var/lib/docker:/var/lib/docker docker/v1.10-migrator
+
 ```
+
 
 如果你使用 ` devicemapper ` 存储驱动器， 你需要使用选项 ` --privileged `，这样容器才能访问你的存储驱动器。
 
@@ -56,7 +60,9 @@ $ sudo docker run --rm -v /var/lib/docker:/var/lib/docker docker/v1.10-migrator
 ### 移植案例
 
 下面的案例展示了移植工具在运行docker 1.9.1和使用AUFS存储驱动器的主机上使用。 docker主机配置为 AWS EC2 t2.micro, 1 vCPU, 1GB RAM 和一个 8GB的SSD EBS卷。 docker 数据目录[/var/lib/docker]使用了2GB的空间。
+
 ```
+
 $ docker images
 
 REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
@@ -90,14 +96,20 @@ time="2016-01-27T12:32:00Z" level=debug msg="layer dbacfa057b30b1feaf15937c28bd8
 real    0m59.583s
 user    0m0.046s
 sys     0m0.008s
+
 ```
 
+
 ` time ` 命令估计了 ` docker run ` 命令执行了多长时间。 可以看到， 移植7个镜像总共消耗了大概一分钟； 其中包括pull ` docker/v1.10-migrator ` 镜像的时间（大约3.5s）。同样的操作，在m4.10xlarge EC2 instance with 40 vCPUs, 160GB RAM and an 8GB provisioned IOPS EBS volume 上，结果如下：
+
 ```
+
 real    0m9.871s
 user    0m0.094s
 sys     0m0.021s
+
 ```
+
 
 这说明了移植操作的效率受硬件影响。
 
@@ -127,7 +139,9 @@ docker使用 copy-on-write 技术同时用于镜像和容器。 CoW策略优化�
 所有镜像和容器层都存在于docker主机的*本地存储区域*，且通过存储驱动管理。 基于linux版的docker主机通常位于 ` /var/lib/docker/ ` 。
 
 在使用 ` docker pull ` 和 ` docker push `时， docker客户端报告镜像层信息。下面的命令是pull ` ubuntu:15.04 ` 时的信息：
+
 ```
+
 $ docker pull ubuntu:15.04
 
 15.04: Pulling from library/ubuntu
@@ -137,14 +151,18 @@ f157c4e5ede7: Pull complete
 a3ed95caeb02: Pull complete
 Digest: sha256:5e279a9df07990286cce22e1b0f5b0490629ca6d187698746ae5e28e604a640e
 Status: Downloaded newer image for ubuntu:15.04
+
 ```
+
 
 从输出中可以看到， 该命令实际上pull了4个镜像层。每一行都列出了镜像层的UUID或者hash加密。 ` ubuntu:15.04 ` 就是由这4层构成的。
 
 每个镜像层都被保存在docker主机的本地存储内属于各自的目录中。
 
 docker 1.10之前的版本中， 所有layer被保存在以自己的 ` image ID ` 命令的目录中。 然而，这种方式在 1.10以后并不适用了。 例如，下面的命令为docker 1.9.1版本时， pull下的镜像信息
+
 ```
+
 $  docker pull ubuntu:15.04
 
 15.04: Pulling from library/ubuntu
@@ -161,10 +179,14 @@ $ ls /var/lib/docker/aufs/layers
 c8be1ac8145a6e59a55667f573883749ad66eaeef92b4df17e5ea1260e2d7356
 df6e891a3ea9cdce2a388a2cf1b1711629557454fd120abd5be6d32329a0e0ac
 e65155041eed7ec58dea78d90286048055ca75d41ea893c7246e794389ecf203
+
 ```
 
+
 注意，4个目录名称可以与layer ID 匹配。 现在，对比 docker 1.10 版本的区别，
+
 ```
+
 $ docker pull ubuntu:15.04
 15.04: Pulling from library/ubuntu
 1ba8ac955b97: Pull complete
@@ -179,7 +201,9 @@ $ ls /var/lib/docker/aufs/layers/
 5dbb0cbe0148cf447b9464a358c1587be586058d9a4c9ce079320265e2bb94e7
 bef7199f2ed8e86fa4ada1309cfad3089e0542fec8894690529e4c04a7ca2d73
 ebf814eccfe98f2704660ca1d844e4348db3b5ccc637eb905d4818fbfb00a06a
+
 ```
+
 
 可以看出， 4个目录名称与镜像的layer ID 不匹配。
 
@@ -188,21 +212,31 @@ ebf814eccfe98f2704660ca1d844e4348db3b5ccc637eb905d4818fbfb00a06a
 为了阐释这一点， 使用刚才pull的 ` ubuntu:15.04 ` ， 随便更改一些东西，并在此基础上创建一个新的镜像。 其中一种方法则是使用 ` Dockerfile ` 和 ` docker build ` 命令：
 
 1. In an empty directory, create a simple Dockerfile that starts with the ubuntu:15.04 image.
+
 ```
+
 FROM ubuntu:15.04
+
 ```
+
 
 2. Add a new file called “newfile” in the image’s /tmp directory with the text “Hello world” in it.
 When you are done, the Dockerfile contains two lines:
+
 ```
+
  FROM ubuntu:15.04
 
  RUN echo "Hello world" > /tmp/newfile
+
 ```
+
 
 3. Save and close the file.
 4. From a terminal in the same folder as your Dockerfile, run the following command:
+
 ```
+
  $ docker build -t changed-ubuntu .
 
  Sending build context to Docker daemon 2.048 kB
@@ -213,19 +247,27 @@ When you are done, the Dockerfile contains two lines:
   ---> 94e6b7d2c720
  Removing intermediate container d14acd6fad4e
  Successfully built 94e6b7d2c720
+
 ```
+
 
 > Note: The period (.) at the end of the above command is important. It tells the docker build command to use the current working directory as its build context.
 
 5. Run the docker images command to verify the new changed-ubuntu image is in the Docker host’s local storage area.
+
 ```
+
  REPOSITORY       TAG      IMAGE ID       CREATED           SIZE
  changed-ubuntu   latest   03b964f68d06   33 seconds ago    131.4 MB
  ubuntu           15.04    013f3d01d247   6 weeks ago       131.3 MB
+
 ```
 
+
 6. 使用 ` docker history ` 命令查看创建 ` changed-ubuntu ` 镜像使用了哪些镜像层。
+
 ```
+
  $ docker history changed-ubuntu
  IMAGE               CREATED              CREATED BY                                      SIZE        COMMENT
  94e6b7d2c720        2 minutes ago       /bin/sh -c echo "Hello world" > /tmp/newfile    12 B 
@@ -233,7 +275,9 @@ When you are done, the Dockerfile contains two lines:
  <missing>           6 weeks ago         /bin/sh -c sed -i 's/^#\s*\(deb.*universe\)$/   1.879 kB
  <missing>           6 weeks ago         /bin/sh -c echo '#!/bin/sh' > /usr/sbin/polic   701 B
  <missing>           6 weeks ago         /bin/sh -c #(nop) ADD file:8e4943cd86e9b2ca13   131.3 MB
+
 ```
+
 
 ` docker history ` 命令的输出信息展示了新的 ` 94e6b7d2c720 ` 镜像层位于最上方。 该层是最新被添加的，因为是通过 ` echo "Hello world" > /tmp/newfile ` 命令创建的。 下面4个镜像层与组成 ` ubuntu:15.04 ` 的镜像层相同。
 
@@ -273,7 +317,9 @@ Btrf、ZFS或其他驱动器处理 ` copy-on-write ` 的方式不同。 在以�
 
 让我们来看一下，如果同时启动5个基于 ` changed-ubuntu ` 镜像的容器会发生什么：
 1. 在终端使用 ` docker run ` 命令 5 次。 
+
 ```
+
  $ docker run -dit changed-ubuntu bash
 
  75bab0d54f3cf193cfdc3a86483466363f442fba30859f7dcd1b816b6ede82d4
@@ -294,12 +340,16 @@ Btrf、ZFS或其他驱动器处理 ` copy-on-write ` 的方式不同。 在以�
 
  0ad25d06bdf6fca0dedc38301b2aff7478b3e1ce3d1acd676573bba57cb1cfef
  
+
 ```
+
 
 启动了5个基于 ` changed-ubuntu ` 镜像的容器。每个容器被创建时，docker都添加了一个可写层并分配了一个随机的UUID。这些值通过 ` docker run ` 命令被返回。
 
 2. 使用 ` docker ps ` 命令确认 5 个容器都在运行。
+
 ```
+
  $ docker ps
  CONTAINER ID    IMAGE             COMMAND    CREATED              STATUS              PORTS    NAMES
  0ad25d06bdf6    changed-ubuntu    "bash"     About a minute ago   Up About a minute            stoic_ptolemy
@@ -308,12 +358,16 @@ Btrf、ZFS或其他驱动器处理 ` copy-on-write ` 的方式不同。 在以�
  9280e777d109    changed-ubuntu    "bash"     2 minutes ago        Up 2 minutes                 backstabbing_mahavira
  75bab0d54f3c    changed-ubuntu    "bash"     2 minutes ago        Up 2 minutes                 boring_pasteur
 
+
 ```
+
 
 输出显示 5 个容器都在运行，且共享 ` changed-ubuntu ` 镜像。 每个 ` CONTAINER ID ` 都来自于各自创建容器的 UUID 。
 
 3. 查看本经存储区域的内容
+
 ```
+
 
  $ sudo ls /var/lib/docker/containers
 
@@ -323,7 +377,9 @@ Btrf、ZFS或其他驱动器处理 ` copy-on-write ` 的方式不同。 在以�
  a651680bd6c2ef64902e154eeb8a064b85c9abf08ac46f922ad8dfc11bb5cd8a
  8eb24b3b2d246f225b24f2fca39625aaad71689c392a7b552b78baf264647373
 
+
 ```
+
 docker的 copy-on-write 策略不仅减少了容器消耗的空间，同时也减少了启动容器所需要的时间。在启动容器时， 的哦此可忍只需要创建每个容器的可写层。 下图展示了5个容器共享一个只读(RO)的 ` changed-ubuntu `镜像副本：
 
 ![shared-uuid.jpg](https://docs.docker.com/engine/userguide/storagedriver/images/shared-uuid.jpg)

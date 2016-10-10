@@ -10,14 +10,18 @@
 1. 打开一个都终端。
 
 2. 使用命令 ` docker images ` 列出当前所有的镜像。
+
 ```
+
 $ docker images
 REPOSITORY           TAG          IMAGE ID            CREATED             SIZE
 docker-whale         latest       7d9495d03763        38 minutes ago      273.7 MB
 <none>               <none>       5dac217f722c        45 minutes ago      273.7 MB
 docker/whalesay      latest       fb434121fc77        4 hours ago         247 MB
 hello-world          latest       91c95931e552        5 weeks ago         910 B
+
 ```
+
 
 3. 找到` docker-whale `镜像的的` IMAGE ID `。
 本例中，id为7d9495d03763。
@@ -28,12 +32,18 @@ hello-world          latest       91c95931e552        5 weeks ago         910 B
 ![tagger.png](http://files.uyinn.com/media/docker/tagger.png)
 
 当然，账号必须是你自己的。之后使用包含镜像的ID和用户名的命令进行标记。
-```
-$ docker tag 7d9495d03763 maryatdocker/docker-whale:latest
+
 ```
 
-5. 使用命令 ` docker images ` 查看新标记的镜像。
+$ docker tag 7d9495d03763 maryatdocker/docker-whale:latest
+
 ```
+
+
+5. 使用命令 ` docker images ` 查看新标记的镜像。
+
+```
+
 $ docker images
 REPOSITORY                  TAG       IMAGE ID        CREATED          SIZE
 maryatdocker/docker-whale   latest    7d9495d03763    5 minutes ago    273.7 MB
@@ -41,22 +51,34 @@ docker-whale                latest    7d9495d03763    2 hours ago      273.7 MB
 <none>                      <none>    5dac217f722c    5 hours ago      273.7 MB
 docker/whalesay             latest    fb434121fc77    5 hours ago      247 MB
 hello-world                 latest    91c95931e552    5 weeks ago      910 B
+
 ```
+
 6. 使用命令 ` docker login ` 登录DockerHub。
+
 ```
+
 docker login 
+
 ```
+
 跟具体是输入账号和密码，例如：
+
 ```
+
 $ docker login
 Login with your Docker ID to push and pull images from Docker Hub. If you don't have a Docker ID, head over to https://hub.docker.com to create one.
 Username: 
 Password:        
 Login Succeeded
+
 ```
 
+
 7. 使用命令 ` docker push ` 将镜像推送到你的DockerHub仓库。
+
 ```
+
 $ docker push maryatdocker/docker-whale
     The push refers to a repository [maryatdocker/docker-whale] (len: 1)
     7d9495d03763: Image already exists
@@ -73,7 +95,9 @@ $ docker push maryatdocker/docker-whale
     a82efea989f9: Image successfully pushed
     e9e06b06e14c: Image successfully pushed
     Digest: sha256:ad89e88beb7dc73bf55d456e2c600e0a39dd6c9500d7cd8d1025626c4b985011
+
 ```
+
 
 8. 登录DockerHub网站查看你的镜像信息
 ![new_image.png](https://docs.docker.com/engine/getstarted/tutimg/new_image.png)
@@ -84,7 +108,9 @@ $ docker push maryatdocker/docker-whale
 1. 确认Docker正在运行。
 
 2. 使用命令 ` docker images ` 列出所有本地镜像
+
 ```
+
 $ docker images
 REPOSITORY                  TAG       IMAGE ID        CREATED          SIZE
 maryatdocker/docker-whale   latest    7d9495d03763    5 minutes ago    273.7 MB
@@ -92,25 +118,37 @@ docker-whale                latest    7d9495d03763    2 hours ago      273.7 MB
 <none>                      <none>    5dac217f722c    5 hours ago      273.7 MB
 docker/whalesay             latest    fb434121fc77    5 hours ago      247 MB
 hello-world                 latest    91c95931e552    5 weeks ago      910 B
+
 ```
+
 如果要好好的完成测试，你需要删除本的镜像 ` maryatdocker/docker-whale ` 和 ` docker-whale ` 。只有删除了，才能强制之后的 ` docker pull ` 从DockerHub仓库下载新镜像。
 
 3. 使用命令 ` docker rmi ` 删除镜像。
+
 ```
+
 $ docker rmi -f 7d9495d03763
 $ docker rmi -f docker-whale
+
 ```
+
 >你可以使用`IMAGE ID`或者`REPOSITORY:TAG`来删除镜像。
 >如果多个镜像具有相同 IMAGE ID，docker会提示错误。
 >如果不为 REPOSITORY 指定 TAG，那么 TAG 默认之为 `latest`。
 
 4. 使用命令 ` docker run ` 从你的仓库中下载并运行一个新镜像。
 该命令必须包含你的DockerHub用户名，否则将会从官方镜像下载。
+
 ```
+
 $ docker run yourusername/docker-whale
+
 ```
+
 由于该镜像已经不在本地了，因此docker需要重新下载。
+
 ```
+
 $ docker run maryatdocker/docker-whale
 Unable to find image 'maryatdocker/docker-whale:latest' locally
 latest: Pulling from maryatdocker/docker-whale
@@ -151,4 +189,6 @@ Status: Downloaded newer image for maryatdocker/docker-whale:latest
              \______ o          __/
               \    \        __/
                 \____\______/
+
 ```
+

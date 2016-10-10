@@ -33,7 +33,9 @@ DockerHub镜像库包含了所有独立用户提交的镜像，比如说你的�
 ### 通过命令行查找
 除了能够通过网页查找之外，docker引擎还提供了命令行` docker search `。然而，在描述上，命令还并没有页面清楚。
 
+
 ```
+
 $ sudo docker search -h
 
 Usage: docker search [OPTIONS] TERM
@@ -45,9 +47,13 @@ Search the Docker Hub for images
   --no-trunc=false     Don't truncate output
   -s, --stars=0        只显示N星以上的
 
+
 ```
 
+
+
 ```bash
+
 $ sudo docker search whalesay
 NAME                                     DESCRIPTION                                     STARS     OFFICIAL   AUTOMATED
 docker/whalesay                          An image for use in the Docker demo tutorial    421                  
@@ -60,7 +66,9 @@ sabs1117/whalesay                        Whalesay with fortune phrases.         
 ojenge/whalesay                          from docker/whalesay                            1                    
 ...
 
+
 ```
+
 
 ##Step 02: 启动 whalesay 镜像
 确认Docker已经运行。On Docker for Mac and Docker for Windows, this is indicated by the Docker whale showing in the status bar.
@@ -69,7 +77,9 @@ ojenge/whalesay                          from docker/whalesay                   
 2. 输入` docker run docker/whalesay cowsay boo `命令，并回车
 该命令会在一个容器中启动**whaleway**镜像。你的终端应该能看到一下信息
 
+
 ```bash
+
 $ docker run docker/whalesay cowsay boo
 Unable to find image 'docker/whalesay:latest' locally
 latest: Pulling from docker/whalesay
@@ -100,23 +110,31 @@ Status: Downloaded newer image for docker/whalesay:latest
         \    \        __/             
           \____\______/   
 
+
 ```
+
 
 当你第一次使用该镜像时，` docker `命令会在本机查找该镜像是否存在。如果不存在，` docker `会从hub上下载。
 
 3. 然后接着在终端输入 ` docker images `命令并回车
 该命令会列出本机上所有的镜像。你可以看到` docker/whalesay `已经在列表中了。
+
 ```bash
+
 $ docker images
 REPOSITORY           TAG         IMAGE ID            CREATED            SIZE
 docker/whalesay      latest      fb434121fc77        3 hours ago        247 MB
 hello-world          latest      91c95931e552        5 weeks ago        910 B
+
 ```
+
 当你在容器中启动一个镜像时，Docker会下载该镜像到你的计算机中。拷贝到本地的镜像会记录一个时间。只有当hub上的源镜像发生改变的时候，才会重新下载镜像。当然，你也可以自己删掉这些镜像。这个我们之后会学习。
 
 4. 在多玩一会**whalesay**
 可以尝试一下在启动` whalesay `的时候使用一些更长或更短的短语。你玩儿的转么？
+
 ```bash
+
 $ docker run docker/whalesay cowsay boo-boo
  _________
 < boo-boo >
@@ -132,4 +150,6 @@ $ docker run docker/whalesay cowsay boo-boo
        \______ o          __/            
         \    \        __/             
           \____\______/   
+
 ```
+

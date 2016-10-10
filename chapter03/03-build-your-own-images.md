@@ -19,7 +19,9 @@ docker images是容器的技术。每次使用 ` docker run ` 命令时都需要
 
 使用 ` docker images ` 可以列出本地计算机上的所有镜像。
 
+
 ```bash
+
 $ docker images
 
 REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
@@ -27,7 +29,9 @@ ubuntu              14.04               1d073211c498        3 days ago          
 busybox             latest              2c5ac3f849df        5 days ago          1.113 MB
 training/webapp     latest              54bb4e8718e8        5 months ago        348.7 MB
 
+
 ```
+
 
 你可以找到之前使用过的镜像。这些镜像都是之前在启动容器时从DockerHub上下载的。当你查看镜像列表时，需要注意三个重要信息：
 + 镜像所在的仓库，例如ubuntu
@@ -38,19 +42,31 @@ training/webapp     latest              54bb4e8718e8        5 months ago        
 
 
 仓库中可能包含了一个镜像的不同衍生版，我们使用的ubuntu包含的衍生版有10.04,12.04,12.10,13.04,13.10和14.04。每个衍生版都有一个独立的tag。你可以通过tag指定需要使用的衍生版，例如：
+
 ```bash
+
 ubuntu:14.04
+
 ```
+
 
 因此当你的容器运行一个指定tag的镜像，命令如下：
+
 ```bash
+
 $ docker run -t -i ubuntu:14.04 /bin/bash
+
 ```
 
+
 如果你想使用12.04，则为：
+
 ```bash
+
 $ docker run -t -i ubuntu:12.04 /bin/bash
+
 ```
+
 
 如果命令中不指定tag，例如 ` ubuntu `， 那么docker默认使用 ` ubuntu:latest ` 镜像。
 
@@ -60,7 +76,9 @@ $ docker run -t -i ubuntu:12.04 /bin/bash
 ## 获得一个新镜像
 
 如果你使用的镜像本机不存在，那么docker会自动下载。不过这样会增加部分启动时间。如果你需要预先下载一个镜像，可以使用 ` docker pull ` 命令。 加入你准备下载 ` centos ` 镜像：
+
 ```bash 
+
 $ docker pull centos
 
 Using default tag: latest
@@ -70,13 +88,19 @@ c852f6d61e65: Pull complete
 7322fbe74aa5: Pull complete
 Digest: sha256:90305c9112250c7e3746425477f1c4ef112b03b4abe78c612e092037bfecc3b7
 Status: Downloaded newer image for centos:latest
+
 ```
 
+
 你可以看到镜像的每个层(layer)。而且现在启动容器时不用在等待下载镜像了。
+
 ```bash
+
 $ docker run -t -i centos /bin/bash
 bash-4.1#
+
 ```
+
 
 
 ## 查找镜像
@@ -84,7 +108,9 @@ docker的其中一个特点在于人们基于不同目的创建了各种各样�
 ![Docker_hub_search.png](https://docs.docker.com/engine/tutorials/search.png)
 
 你可以在命令行界面使用 ` docker search ` 命令查找镜像。加入你想查找一个安装了Ruby和Sinatra的镜像，可以使用 ` docker search sinatra ` 命令查询包含了sinatra的所有镜像。
+
 ```bash
+
 $ docker search sinatra
 NAME                                   DESCRIPTION                                     STARS     OFFICIAL   AUTOMATED
 training/sinatra                       Sinatra training image                          0                    [OK]
@@ -95,7 +121,9 @@ bmorearty/handson-sinatra              handson-ruby + Sinatra for Hands on with 
 subwiz/sinatra                                                                         0
 bmorearty/sinatra                                                                      0
 . . .
+
 ```
+
 
 你可以看到命令返回了很多包含了sinatra关键字的镜像；列表中包含了镜像名称，描述和stars(受欢迎程度，如果一个用户喜欢该镜像则可以为镜像加star)；以及官方版本和自动创建状态。[官方仓库](https://docs.docker.com/docker-hub/official_repos)由docker.Inc管理一系列的docker仓库。 [自动创建](https://docs.docker.com/engine/tutorials/dockerrepos/#automated-builds)允许你去验证镜像的源和内容。
 
@@ -107,16 +135,24 @@ bmorearty/sinatra                                                               
 ## 拉取镜像
 
 这里我们使用 `training/sinatra`镜像。 你可以使用 ` docker pull ` 命令下载镜像
+
 ```bash
+
 $ docker pull training/sinatra 
+
 ```
 
+
 下载完成后，就可以在容器中应用该镜像了
+
 ```bash
+
 $ docker run -t -i training/sinatra /bin/bash
 
 root@a8cb6ce02d85:/#
+
 ```
+
 
 ## 创建你自己的镜像
 
@@ -127,31 +163,43 @@ root@a8cb6ce02d85:/#
 ### 更新容器与使用commit创建镜像
 
 创建镜像之前需要启动一个容器
+
 ```
+
 $ docker run -t -i training/sinatra /bin/bash
 
 root@0b2616b0e5a8:/#
+
 ```
+
 
 > **注意**： 记住所启动的容器ID , 0b2616b0e5a8 , 之后会使用。 如果你能识别容器，也可以在退出容器后使用 ` docker ps -a ` 查看容器信息。
 
 在容器内更新Ruby
 使用gem安装`json`
+
 ```
+
 root@0b2616b0e5a8:/# apt-get install -y ruby2.0-dev
 root@0b2616b0e5a8:/# gem2.0 install json
+
 ```
+
 
 使用 ` Ctrol+D ` 或 ` exit ` 命令退出容器
 
 容器已经被改变了，使用 ` docker commit ` 提交容器的一个副本为镜像
+
 ```
+
 $ docker commit -m "Added json gem" -a "Kate Smith" \
 0b2616b0e5a8 ouruser/sinatra:v2
 
 4f177bd27a9ff0f6dc2a830403925b5360bfe0b93d476f7fc3231110e7f71b1c
 
+
 ```
+
 
 ` -m ` 表示提交的备注信息；` -a ` 表示镜像测作者或维护人员。
 使用ID为0b2616b0e5a8的容器；创建的镜像为 ` ouruser/sinatra:v2 `，包含了仓库与TAG
@@ -162,21 +210,29 @@ $ docker commit -m "Added json gem" -a "Kate Smith" \
 + 新的tag ` v2 `
 
 使用 ` docker images ` 查看镜像是否已经被创建了
+
 ```
+
 $ docker images
 
 REPOSITORY          TAG     IMAGE ID       CREATED       SIZE
 training/sinatra    latest  5bc342fa0b91   10 hours ago  446.7 MB
 ouruser/sinatra     v2      3c59e02ddd1a   10 hours ago  446.7 MB
 ouruser/sinatra     latest  5db5f8471261   10 hours ago  446.7 MB
+
 ```
 
+
 使用新镜像创建容器
+
 ```
+
 $ docker run -t -i ouruser/sinatra:v2 /bin/bash
 
 root@78e82f680994:/#
+
 ```
+
 
 > 更多关于commit创建镜像的信息，可以参考[C02S03.2 使用commit提交容器创建镜像](../chapter02/03-build-your-own-image-with-commit.md)
 
@@ -188,28 +244,40 @@ root@78e82f680994:/#
 ` Dockerfile ` ： 包含了创建镜像时需要的基础镜像与一些列创建指令。
 
 首先，创建一个目录和 ` Dockerfile ` 
+
 ```bash
+
 $ mkdir sinatra
 
 $ cd sinatra
 
 $ touch Dockerfile
+
 ```
+
 
 dockerfile内的每一条指令都会创建一个镜像layer。
 创建一个简单的dockerfile来创建你的 Sinatra 镜像。
+
 ```bash
+
 # This is a comment
 FROM ubuntu:14.04
 MAINTAINER Kate Smith <ksmith@example.com>
 RUN apt-get update && apt-get install -y ruby ruby-dev
 RUN gem install sinatra
+
 ```
 
+
 检查Dockerfile，确保每行指令都以**大写字母的声明关键字**开头
+
 ```
+
 INSTRUCTION statement
+
 ```
+
 
 > **注意**：以 ` # ` 开头的行为注释行。
 
@@ -220,7 +288,9 @@ INSTRUCTION statement
 > **注意**：` FROM ` 行必须位于dockerfile的第一行，否则会报错。
 
 使用创建的 ` Dockerfile ` 和 ` docker build ` 命令创建镜像
+
 ```
+
 $ docker build -t ouruser/sinatra:v2 .
 
 Sending build context to Docker daemon 2.048 kB
@@ -385,7 +455,9 @@ Installing RDoc documentation for sinatra-1.4.5...
  ---> 97feabe5d2ed
 Removing intermediate container 6b81cb6313e5
 Successfully built 97feabe5d2ed
+
 ```
+
 
 上面执行的 ` docker build ` 命令中使用了 `-t ` 标识， 指定新创建的镜像就属于 ` ousruser `用户，仓库名为 ` sinatra `， tag为 ` v2 `。
 > -t, --tag value               Name and optionally a tag in the 'name:tag' format (default [])
@@ -403,11 +475,15 @@ Successfully built 97feabe5d2ed
 > **注意**： 一个镜像不能超过127层。该限制主要是为了鼓励优化镜像。
 
 使用刚才创建的镜像启动容器：
+
 ```
+
 $ docker run -t -i ouruser/sinatra:v2 /bin/bash
 
 root@8196968dac35:/#
+
 ```
+
 
 > **注意**： 这只是一个简单的` docker build ` 案例，省略了很多关键字。 在以后的章节中会学习更多的创建指令。 访问[Best Practices guide](https://docs.docker.com/engine/userguide/eng-image/dockerfile_best-practices/)学习更多Dockerfile的指令。
 
@@ -415,9 +491,13 @@ root@8196968dac35:/#
 
 ## 为镜像设置tag
 使用 ` docker tag ` 为已存在的镜像设置新的TAG。
+
 ```
+
 $ docker tag 5db5f8471261 ouruser/sinatra:devel
+
 ```
+
 这里 ` docker tag ` 命令使用了镜像ID、用户名、仓库名和一个新的TAG
 
 > **注意**： 镜像ID部分可以换成镜像的其他唯一标识符，例如 `username/repo:tag` 
@@ -425,31 +505,43 @@ $ docker tag 5db5f8471261 ouruser/sinatra:devel
  
 
 现在使用 ` docker images ` 命令可以查看到新的tag镜像。
+
 ```
+
 $ docker images ouruser/sinatra
 
 REPOSITORY          TAG     IMAGE ID      CREATED        SIZE
 ouruser/sinatra     latest  5db5f8471261  11 hours ago   446.7 MB
 ouruser/sinatra     devel   5db5f8471261  11 hours ago   446.7 MB
 ouruser/sinatra     v2      5db5f8471261  11 hours ago   446.7 MB
+
 ```
+
  
 ## 镜像校验符digests
 
 docker镜像有一个属性叫`digests`，是一种内容寻址标识符。只要镜像没有被改变，那么校验值就不会改变，是可以被推算出来的。
 使用 ` --digests ` 标志可以可以查校验值。
+
 ```
+
 $ docker images --digests | head
 
 REPOSITORY        TAG      DIGEST                                                                     IMAGE ID      CREATED       SIZE
 ouruser/sinatra   latest   sha256:cbbf2f9a99b47fc460d422812b6a5adff7dfee951d8fa2e4a98caa0382cfbdbf    5db5f8471261  11 hours ago  446.7 MB
+
 ```
 
+
 > **注意**： 只有被push到docker hub(或者其他registry仓库)上的镜像才拥有一串有意义的校验值。否则显示 <none>。、
+
 > ```
+
 > REPOSITORY                    TAG                          DIGEST               IMAGE ID            CREATED             SIZE
 > octowhale/centos7             whalesay-change-cmd-v4       <none>               216b5d379710        3 days ago          474.6 MB
+
 > ```
+
 
 由于digest具有唯一性，你也可以**使用digest进行镜像操作**，包括 ` create, run, rmi ` 等命令。也可以用在 `Dockerfile中的FROM中`。
 
@@ -457,7 +549,9 @@ ouruser/sinatra   latest   sha256:cbbf2f9a99b47fc460d422812b6a5adff7dfee951d8fa2
 ## push镜像到Docker Hub
 
 镜像创建完成后你可以使用 ` docker push ` 命令将它们推送到 Docker Hub中分享给其他用户。
+
 ```
+
 $ docker push ouruser/sinatra
 
 The push refers to a repository [ouruser/sinatra] (len: 1)
@@ -465,7 +559,9 @@ Sending image list
 Pushing repository ouruser/sinatra (3 tags)
 . . .
 
+
 ```
+
 
 
 ## 从本地计算机中删除镜像
@@ -473,14 +569,18 @@ Pushing repository ouruser/sinatra (3 tags)
 你可以使用 ` docker rmi ` 命令删除本地计算机上的[相似镜像](../chapter03/02-run-a-simple-application.md)
 
 删除 ` training/sinatra `
+
 ```
+
 $ docker rmi training/sinatra
 
 Untagged: training/sinatra:latest
 Deleted: 5bc342fa0b91cabf65246837015197eecfa24b2213ed6a51a8974ae250fedd8d
 Deleted: ed0fffdcdae5eb2c3a55549857a8be7fc8bc4241fb19ad714364cbfd7a56b22f
 Deleted: 5c58979d73ae448df5af1d8142436d81116187a7633082650549c52c3a2418f0
+
 ```
+
 
 > **注意**： 删除镜像前，确保没有正在运行的容器在该镜像。
 > **注意**： 如果多个镜像具有相同的镜像ID，那么在删除最后一个TAG之前，镜像都不会被真正删除而是解除TAG绑定。

@@ -14,10 +14,14 @@ docker必须运行在64-bit的系统上，对于CentOS的版本号并没有特�
 
 通过` uname -r ` 查看内核版本
 
+
 ```
+
 $ uname -r
 3.10.0-327.el7.x86_64
+
 ```
+
 
 最后，我们建议你完全升级你的系统。请记住，你的系统应该完全修复可能存在的内核bug。任何已经被报告的内核bug可能已经在上一个内核包中被修复。
 
@@ -30,12 +34,18 @@ $ uname -r
 1. 登录系统，并确认用户为` root `或者用户有权限使用` sudo `命令。
 2. 保证你现有的yum安装包是最新的。
 
-```bash
-$ sudo yum update 
-```
-3. 添加yum repo
 
 ```bash
+
+$ sudo yum update 
+
+```
+
+3. 添加yum repo
+
+
+```bash
+
 $ sudo tee /etc/yum.repos.d/docker.repo <<-'EOF'
 [dockerrepo]
 name=Docker Repository
@@ -45,19 +55,31 @@ gpgcheck=1
 gpgkey=https://yum.dockerproject.org/gpg
 EOF
 
+
 ```
+
 4. 安装docker   
+
 ```bash
+
 $ sudo yum install docker-engine
+
 ```
+
 5. 启动docker     
 
-```bash
-$ sudo service docker start
-```
-6. 确认` docker `被正确安装并在容器中运行一个测试镜像(image)    
 
 ```bash
+
+$ sudo service docker start
+
+```
+
+6. 确认` docker `被正确安装并在容器中运行一个测试镜像(image)    
+
+
+```bash
+
 $ sudo docker run hello-world
 Unable to find image 'hello-world:latest' locally
 latest: Pulling from library/hello-world
@@ -86,15 +108,21 @@ Share images, automate workflows, and more with a free Docker Hub account:
 For more examples and ideas, visit:
  https://docs.docker.com/engine/userguide/
  
+
 ```
+
 
 ###使用脚本安装
 
 3. 执行安装脚本
 
+
 ```bash
+
 $ curl -fsSL https://get.docker.com/ | sh 
+
 ```
+
 该脚本会添加` docker.repo `仓库并安装docker。
 
 
@@ -109,25 +137,37 @@ $ curl -fsSL https://get.docker.com/ | sh
 接下来，创建docker用户组并添加用户。
 
 1. 创建一个docker用户组      
+
 ```$ sudo groupadd docker ```     
+
 2. 为docker用户组添加用户     
+
 ```
+
 $ sudo usermod -aG docker your_username 
+
 ```    
+
 3. 登录并重新登录    
 这样可以保证你的用户获得正确的权限     
 4. 确认你可以不使用sudo启动docker容器     
+
 ```$ docker run hello-world```
+
 
 
 ##设置docker daemon为开机启动
 
 确保docker会在开机时候启动，需要执行以下命令     
+
 ```
+
 sudo chkconfig docker on 
 # 或者
 sudo systemctl enabld docker.service 
+
 ```
+
 
 如果你需要使用HTTP代理，那么需要为Docker执行文件另外设置一个目录或者分区，或者使用其他定制选项。阅读关于系统的文章并学习[customize your Systemd Docker daemon options](https://docs.docker.com/engine/admin/systemd/)。
 
@@ -137,22 +177,34 @@ sudo systemctl enabld docker.service
 
 1. 列出所有以及安装的程序包
 
+
 ```bash
+
 $ yum list installed |grep docker 
 docker-engine.x86_64                 1.12.1-1.el7.centos             @dockerrepo
 docker-engine-selinux.noarch         1.12.1-1.el7.centos             @dockerrepo 
+
 ```
+
 2. 删除软件包
 
+
 ```bash
+
 $ sudo yum -y remove docker-engine.x86_64                 1.12.1-1.el7.centos
+
 ```
+
 该命令不会删除docker镜像，容器，数据卷，或者用户创建的配置文件。          
 3. 如果要删除镜像，容器和数据卷，使用以下命令    
 
+
 ```
+
 $ rm -rf /var/lib/docker
+
 ```
+
 4. 查找并删除其他任意用户创建的配置文件。
 
 

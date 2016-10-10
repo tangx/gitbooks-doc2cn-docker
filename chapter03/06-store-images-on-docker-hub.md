@@ -24,9 +24,13 @@ docker本身提供了可以访问 Docker Hub服务的命令，例如 ` docker se
 使用CLI命令之前，需要到 Docker Hub上创建用户。
 
 在命令行界面登录账户：
+
 ```
+
 $ docker login 
+
 ```
+
 
 login 命令会将你的ID和密码保存在 ` $HOME/.docker/config.json ` 中。 windows中， `cmd` 会保存在 ` %HOME%\.docker\config.json ` ; `Powershell`会保存在 `$env:Home\.docker\config.json`。
 
@@ -35,19 +39,25 @@ login 命令会将你的ID和密码保存在 ` $HOME/.docker/config.json ` 中�
 ## 搜索镜像
 
 通过命令行搜索docker hub上的镜像。结果将返回镜像名称，描述等信息。
+
 ```
+
 $ docker search centos
 
 NAME           DESCRIPTION                                     STARS     OFFICIAL   AUTOMATED
 centos         The official build of CentOS                    1223      [OK]
 tianon/centos  CentOS 5 and 6, created using rinse instea...   33
 ...
+
 ```
+
 
 如 ` centos ` 这类单字镜像为docker官方管理和维护的。 如 ` tianao/centos ` 这类 ` user/repo ` 镜像是有docker用户管理并维护。
 
 一旦确认了需要使用的镜像名，可以使用  ` docker pull ` 拉取镜像：
+
 ```
+
 $ docker pull centos
 
 Using default tag: latest
@@ -57,7 +67,9 @@ c852f6d61e65: Pull complete
 7322fbe74aa5: Pull complete
 Digest: sha256:90305c9112250c7e3746425477f1c4ef112b03b4abe78c612e092037bfecc3b7
 Status: Downloaded newer image for centos:latest
+
 ```
+
 
 ### 镜像的版本或latest
 
@@ -77,9 +89,13 @@ Status: Downloaded newer image for centos:latest
 
 你推送到docker的镜像，镜像名必须使用你的用户名作为仓库前缀。格式为 ` your_account/repo_name `。
 
+
 ```
+
 $ docker push yourname/newimage
+
 ```
+
 
 
 ## docker hub提供的功能

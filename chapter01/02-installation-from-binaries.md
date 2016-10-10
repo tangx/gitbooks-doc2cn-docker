@@ -47,30 +47,44 @@ A 3.10版的Linux内核对于Docker而言是最低要求。低于3.10版的内�
 
 ### 下载linux版的二进制文件包
 通过以下命令，下载最新版本的二进制文件包：
+
 ```
+
 https://get.docker.com/builds/Linux/i386/docker-latest.tgz
 
 https://get.docker.com/builds/Linux/x86_64/docker-latest.tgz
+
 ```
 
+
 通过指定版本号，下载指定版本的二进制文件包。
+
 ```
+
 https://get.docker.com/builds/Linux/i386/docker-<version>.tgz
 
 https://get.docker.com/builds/Linux/x86_64/docker-<version>.tgz
+
 ```
+
 例如：
+
 ```
+
 https://get.docker.com/builds/Linux/i386/docker-1.11.0.tgz
 
 https://get.docker.com/builds/Linux/x86_64/docker-1.11.0.tgz
+
 ```
+
 > **注意**：这些操作适用于DockerEngine1.11及以后版本。1.10及之前的版本由一个单独的二进制文件组成，两种版本类型的操作方式不一样。如果要安装1.10或之前的版本，可以参考[1.10文档](https://docs.docker.com/v1.10/engine/installation/binaries/)
 
 
 ## 通过二进制文件安装
 下载完成后，解压二进制文件包时，会在当前目录生成一个名为docker的目录。
+
 ```
+
 $ tar -xvzf docker-latest.tgz
 
 docker/
@@ -81,18 +95,28 @@ docker/docker-containerd-shim
 docker/docker-proxy
 docker/docker-runc
 docker/dockerd
+
 ```
+
 Docker引擎需要安装在的 ` $PATH `目录下。 例如: ` /usr/bin/ `：
+
 ```
+
 $ mv docker/* /usr/bin/
+
 ```
+
 > **注意**：如果之前在本地安装过DockerEngine，确保再次安装前已经停止Docker运行，` killall docker `；并且将新的二进制文件安装在和之前相同的位置。你可以通过命令 ` which docker ` 获得之前安装的目录信息。
 
 ### 启动docker守护进程
 通过以下命令启动DockerEngine的守护模式
+
 ```
+
 $ sudo dockerd &
+
 ```
+
 在GitHub上提供了一些初始化脚本的模板，你可以通过诸如upstart或systemd的进程管理器管理docker daemon。访问[contrib directory](https://github.com/docker/docker/tree/master/contrib/init)获取这些脚本。
 
 访问[deamon command命令行参考文档](https://docs.docker.com/engine/reference/commandline/dockerd/)，可以获得更多关于管理docker engine的信息。
@@ -100,27 +124,41 @@ $ sudo dockerd &
 
 ## 获取MacOSX版的二进制文件
 MacOSX版的二进制文件只是一个客户端。你不能在OSX下运行 `docker daemon `。 使用下面的URL获取最新版本的docker。
+
 ```
+
 https://get.docker.com/builds/Darwin/x86_64/docker-latest.tgz
+
 ```
+
 使用下面的URL获取指定版本的docker。
+
 ```
+
 https://get.docker.com/builds/Darwin/x86_64/docker-<version>.tgz
 https://get.docker.com/builds/Darwin/x86_64/docker-1.11.0.tgz
+
 ```
+
 你可以通过双击` .tgz `压缩包解压下载的文件；也可以使用命令 ` tar -xvzf docker 1.11.0.tgz `。docker client可以在文件系统的任何位置被执行。
 
 ## 获取windows版的二进制文件
 目前，windows版的只提供1.9.1及之后的版本下载。此外，32-bit的文件只是一个客户端，不能作为deamon运行。但64-bit的文件兼顾客户端和守护进程。
 
 通过以下URL下载最新版本docker：
+
 ```
+
 https://get.docker.com/builds/Windows/i386/docker-latest.zip
 
 https://get.docker.com/builds/Windows/x86_64/docker-latest.zip
+
 ```
+
 通过以下URL下载制定版本的docker：
+
 ```
+
 https://get.docker.com/builds/Windows/i386/docker-<version>.zip
 
 https://get.docker.com/builds/Windows/x86_64/docker-<version>.zip
@@ -128,7 +166,9 @@ https://get.docker.com/builds/Windows/x86_64/docker-<version>.zip
 https://get.docker.com/builds/Windows/i386/docker-1.11.0.zip
 
 https://get.docker.com/builds/Windows/x86_64/docker-1.11.0.zip
+
 ```
+
 
 > **注意**：这些操作适用于DockerEngine1.11及以后版本。1.10及之前的版本由一个单独的二进制文件组成，两种版本类型的操作方式不一样。如果要安装1.10或之前的版本，可以参考[1.10文档](https://docs.docker.com/v1.10/engine/installation/binaries/)
 
@@ -144,8 +184,12 @@ docker daemon一直是使用root用户权限运行的，而且现在docker daemo
 
 ## 升级docker引擎
 如果要在linux系统下升级docker，必须要先关闭docker daemon
+
 ```
+
 $ killall docker
+
 ```
+
 然后按照[常规安装步骤](#获取linux版的docker-engine二进制文件)进程安装。
 
