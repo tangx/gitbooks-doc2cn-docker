@@ -239,6 +239,23 @@ When you are done, the Dockerfile contains two lines:
 > You may hear images like these referred to as flat images.
 
 注意， ` changed-ubuntu ` 并不拥有属于自己的所有镜像层副本。 下图中我们可以看出， 新镜像共享使用了 ` ubuntu:15.04 ` 的底层镜像层：
+
 ![saving-space.jpg](https://docs.docker.com/engine/userguide/storagedriver/images/saving-space.jpg)
 
+` docker history ` 命令同时也显示了每个镜像层的大小。 可以发现， ` 94e6b7d2c720 ` 层只有 12 Bytes。 这意味着 我们创建的 ` changed-ubuntu ` 镜像值消耗了额外的 12 Bytes 磁盘空间； 在 ` 94e6b7d2c720 ` 层以下的所有层已经存在于磁盘，并共享给其他镜像使用。
 
+这种共享镜像层的模式提高了docker 镜像和容器对于磁盘的利用率。
+
+
+### Copying makes containers efficient
+
+你已经知道， 容器是由docker镜像与一个可写的容器层组成。 下图展示了一个基于 ` ubuntu:15.04 ` 镜像的容器的所有层。
+
+![container-layers-cas.jpg](https://docs.docker.com/engine/userguide/storagedriver/images/container-layers-cas.jpg)
+
+容器的所有写操作都被保存在可写的容器层。 其他层则是只读(RO)镜像层，不会被改变。这意味着多个容器可以安全的共享一个底层镜像。 下图展示了多个容器共享同一个 ` ubuntu:15.04 ` 副本。 每个容器拥有自己独立的可写层， 但是却共享一个 ` ubuntu:15.04 ` 镜像实例。
+
+![sharing-layers.jpg](https://docs.docker.com/engine/userguide/storagedriver/images/sharing-layers.jpg)
+
+当容器中的某个已存在文件被修改， docker会使用存储驱动执行一次 copy-on-write 操作。 这特殊的操作依赖于磁盘驱动类型。 对于 AUFS 和 OverlayFS 存储驱动而言， copy-on-write 操作步骤差不多就是下面这样的：
++ 
