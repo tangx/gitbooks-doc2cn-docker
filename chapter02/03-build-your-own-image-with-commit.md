@@ -13,7 +13,7 @@ commit则是自己手动从基本镜像完善容器，并将容器转换为镜�
 2. 下载基本镜像
 
 
-```
+```bash
 
 $ docker pull centos
 Using default tag: latest
@@ -29,7 +29,7 @@ Status: Image is up to date for centos:latest
 3. 启动cents镜像，进入容器
 
 
-```
+```bash
 
 $ docker run -t -i centos /bin/bash
 [root@34dc47734372 /]# 
@@ -41,7 +41,7 @@ $ docker run -t -i centos /bin/bash
 4. 在容器内创建我们需要执行的操作，这里创建一个 [whalesay.sh文件](./script/whalesay.sh) 。 
 
 
-```
+```bash
 
 [root@34dc47734372 ~]#  cat /root/whalesay.sh
 
@@ -78,7 +78,7 @@ chmod +x /root/whalesay.sh
 5. 测试 ` whalesay.sh ` 查看效果
 
 
-```
+```bash
 
 [root@34dc47734372 ~]# /root/whalesay.sh men turn left, cuz women always right.
  _____
@@ -102,7 +102,7 @@ chmod +x /root/whalesay.sh
 OK, 现在我们的程序可以正常运行了。使用 ` exit ` 结束 `/bin/bash ` ，退出容器
 
 
-```
+```bash
 
 [root@34dc47734372 ~]# exit 
 exit
@@ -116,7 +116,7 @@ exit
 6. 使用 ` docker ps -a ` 查看我们所有的容器
 
 
-```
+```bash
 
 $ docker ps -a
 CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS                          PORTS               NAMES
@@ -131,7 +131,7 @@ f933921b59df        centos              "/bin/bash"         16 minutes ago      
 7. 使用 ` docker commit -h ` 查看帮助文档
 
 
-```
+```bash
 
 $ docker commit -h
 Flag shorthand -h has been deprecated, please use --help
@@ -153,7 +153,7 @@ Options:
 8. 使用 `docker rommit 提交镜像`
 
 
-```
+```bash
 
 $ docker commit -a "octowhale@github " -m "CentOS7 whalesay" 34dc47734372 octowhale/centos7:whalesay
 sha256:864c18200b9acd56ce2b4fec42a5cc3fb5a6ee483ab83fee9af9da2784803a4e
@@ -164,7 +164,7 @@ sha256:864c18200b9acd56ce2b4fec42a5cc3fb5a6ee483ab83fee9af9da2784803a4e
 使用 `docker images`查看刚才创建的镜像
 
 
-```
+```bash
 
 $ docker images
 REPOSITORY                    TAG                     IMAGE ID            CREATED              SIZE
@@ -184,7 +184,7 @@ hello-world                   latest                  c54a2cc56cbb        12 wee
 9. 测试创建的whalesay镜像
 
 
-```
+```bash
 
 # 第一次
 $ docker run octowhale/centos7:whalesay
@@ -196,7 +196,7 @@ $ docker run octowhale/centos7:whalesay
 输入命令启动镜像后可以观察到，好像什么都没有发生。但通过 `docker ps -a `可以看到确实使用镜像创建了一个容器。只不过容器没有任何输入，所以看不到效果
 
 
-```
+```bash
 
 $ docker ps -a 
 CONTAINER ID        IMAGE                        COMMAND             CREATED             STATUS                      PORTS               NAMES
@@ -210,7 +210,7 @@ f933921b59df        centos                       "/bin/bash"         34 minutes 
 让我们再来是一次，这次在启动命令上多加一个参数
 
 
-```
+```bash
 
 # 第二次
 $ docker run octowhale/centos7:whalesay /root/whalesay.sh
@@ -275,7 +275,7 @@ f5ebc85e514f        octowhale/centos7:whalesay   "/root/whalesay.sh 'r"   42 sec
 
 
 
-```
+```bash
 
 
 $ docker commit --change='ENTRYPOINT ["/root/whalesay.sh"]' d122c7798ec1 octowhale/centos7:whalesay-change-entrypoint
