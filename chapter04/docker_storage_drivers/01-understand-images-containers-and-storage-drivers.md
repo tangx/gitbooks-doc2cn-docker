@@ -11,6 +11,7 @@
 ## 镜像和镜像层
 
 每个docker镜像涉及了一系列表示文件系统差异的只读镜像层。这些镜像层相互堆叠在一起构成了容器的根文件系统。下面的图片展示了ubuntu 15.04是由4层镜像层堆叠的。
+
 ![image-layers.jpg](https://docs.docker.com/engine/userguide/storagedriver/images/image-layers.jpg)
 
 docker 存储驱动器代表了这些所有堆叠在一起的镜像层，并提供一个统一的视图。
@@ -27,6 +28,7 @@ docker 1.10 引入了一个全新的**内容寻址存储**模块。 这是一个
 该模块提高了安全性，提供了内建方法避免ID冲突，并且保证数据在push、pull、load和save等操作后的完整性。 这也实现了更好的共享镜像层，即使这些镜像层不是来至于相同的build。
 
 下图展示了之前的图片的一个更新版本，提示了由docker 1.10执行的改变，
+
 ![container-layers-cas.jpg](https://docs.docker.com/engine/userguide/storagedriver/images/container-layers-cas.jpg)
 
 可以看到，所有镜像层ID都是使用hash算法， 然而容器ID还是使用一个随机生成的UUID。
@@ -105,6 +107,7 @@ sys     0m0.021s
 容器和镜像的最主要区别是顶部的可写层。容器的所有写入操作（添加/修改）都被保存在这个可写层。当容器被删除的时候，对应的可写层也被删除。但底层镜像保持不变。
 
 由于每个容器拥有其对应的**可写容器层(thin writable container layer)**， 并且所有改变都被保存在这个容器层中，这意味着多个容器可以共享访问同一个底层镜像，并拥有独立的数据状态。 下入展示了多个容器共享同一个ubuntu 15.04镜像：
+
 ![sharing-layers.jpg](https://docs.docker.com/engine/userguide/storagedriver/images/sharing-layers.jpg)
 
 docker存储驱动负责启用和管理镜像层和可写容器层。  How a storage driver accomplishes these can vary between drivers.  docker镜像和容器管理的两个关键技术为： 可堆栈镜像层`stackable image layers` 和 写入时备份`copy-on-write(CoW)`。
