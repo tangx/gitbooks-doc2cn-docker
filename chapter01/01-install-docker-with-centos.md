@@ -154,3 +154,4 @@ $ sudo yum -y remove docker-engine.x86_64                 1.12.1-1.el7.centos
 $ rm -rf /var/lib/docker
 ```
 4. 查找并删除其他任意用户创建的配置文件。
+
