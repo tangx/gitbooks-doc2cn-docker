@@ -56,7 +56,7 @@ WantedBy=default.target
 
 如果你打算使用这个作为系统服务， 把上面的内容保存在配置文件中 ` /etc/systemd/system/docker-redis_server.service `。
 
-如果你需要给reids容器传递参数(such as --evn)， 那么你需要使用 ` docker run ` 而非 ` docker start ` 。 这样每次服务启动后都会创建一个全新的容器， 这些容器会在服务关闭被停止与删除。
+如果你需要给reids容器传递参数(such as --env)， 那么你需要使用 ` docker run ` 而非 ` docker start ` 。 这样每次服务启动后都会创建一个全新的容器， 这些容器会在服务关闭被停止与删除。
 
 ```bash
 [Service]

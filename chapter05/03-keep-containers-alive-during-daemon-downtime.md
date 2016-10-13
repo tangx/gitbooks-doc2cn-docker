@@ -44,7 +44,7 @@ If you skip releases during an upgrade, the daemon may not restore connection th
 
 ## Live restore upon restart
 
-live restore选项只会在**`daemon恢复时的配置`与`daemon停止时的配置`相同时**生效。例如， daemon重启时使用了不同的桥接IP或不同的显卡驱动， live restore可能不会生效。
+live restore选项只会在**`daemon恢复时的配置`与`daemon停止时的配置`相同时**生效。例如， daemon重启时使用了不同的桥接IP或不同的磁盘分区， live restore可能不会生效。
 The live restore option only works to restore the same set of daemon options as the daemon had before it stopped. For example, live restore may not work if the daemon restarts with a different bridge IP or a different graphdriver.
 
 

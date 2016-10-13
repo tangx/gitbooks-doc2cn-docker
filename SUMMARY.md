@@ -45,4 +45,5 @@ docker官方文档，中文汉化项目
   + [docker在各种发行版中的配置与启动](./chapter05/01-configuring-and-running-docker-on-various-distributions.md)
   + [docker自动启动(进程管理器)](./chapter05/02-automatically-start-containers.md)
   + [在守护程序停止时保持容器运行](./chapter05/03-keep-containers-alive-during-daemon-downtime.md)
+  + [使用systemd控制和配置docker](./chapter05/04-control-and-configure-docker-with-systemd)
   
