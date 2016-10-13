@@ -34,8 +34,13 @@ docker官方文档，中文汉化项目
 + [C03S06 管理DockerHub中的容器](./chapter03/06-store-images-on-docker-hub.md)
 
 
-## 第4章 使用手册
+## 第4章 用户使用手册
 + Docker storage drivers
   + [理解镜像,容器和存储驱动器](./chapter04/docker_storage_drivers/01-understand-images-containers-and-storage-drivers.md)
 + networking
   + [理解容器网络](./chapter04/networking/01-understand-docker-container-networks.md)
+
+
+## 第5章 管理使用手册
+  + [docker在各种发行版中的配置与启动](./chapter05/01-configuring-and-running-docker-on-various-distributions.md)
+  
