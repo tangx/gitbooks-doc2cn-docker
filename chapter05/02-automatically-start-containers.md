@@ -81,3 +81,14 @@ To enable the service at system startup, execute:
 ```bash
 systemctl enable docker-redis_server.service
 ```
+
+
+----
+
+## 总结
+
++ docker容器可以设置通过 restart policies或进程管理器设置启动
++ restart policies 与 进程管理器 互斥。 因为两者可能发生冲突
++ 使用systemd自动启动容器实质是**自定义启动服务**
+
+

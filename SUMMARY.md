@@ -43,4 +43,5 @@ docker官方文档，中文汉化项目
 
 ## 第5章 管理使用手册
   + [docker在各种发行版中的配置与启动](./chapter05/01-configuring-and-running-docker-on-various-distributions.md)
+  + [docker自动启动(进程管理器)](./chapter05/01-configuring-and-running-docker-on-various-distributions.md)
   
