@@ -238,4 +238,155 @@ $ docker network inspect isolated_nw
 
 ```
 
-https://docs.docker.com/engine/userguide/networking/work-with-networks/
+你可以看到，engine自动为 container2 分配了一个我们之前创建的网络的IP地址，同时engine也获取了一个相同网络的IP地址。 现在，使用 ` docker run ` 命令和 ` --network ` 选项启动第3个容器并加入网络。
+
+```bash
+$ docker run --network=isolated_nw --ip=172.25.3.3 -itd --name=container3 busybox
+
+467a7863c3f0277ef8e661b38427737f28099b61fa55622d6c30fb288d88c551
+
+```
+
+如你所见，我们可以为容器指定一个IP地址。当创建容器并指定网络时，你可以使用 ` --ip 或 --ip6 ` 为容器制定一个IPV4或IPV6地址。 指定的IP地址是容器网络陪值得一部分，因此在重启容器时，该地址会被保留。 **该功能只能用于用户自定义网络**， 因为需要确保他们的网络配置不会因为docker daemon重启而发生改变。
+
+现在， 查看 container3 的网络资源。
+
+```bash
+{"isolated_nw":{"IPAMConfig":{"IPv4Address":"172.25.3.3"},"NetworkID":"1196a4c5af43a21ae38ef34515b6af19236a3fc48122cf585e3f3054d509679b",
+"EndpointID":"dffc7ec2915af58cc827d995e6ebdc897342be0420123277103c40ae35579103","Gateway":"172.25.0.1","IPAddress":"172.25.3.3","IPPrefixLen":16,"IPv6Gateway":"","GlobalIPv6Address":"","GlobalIPv6PrefixLen":0,"MacAddress":"02:42:ac:19:03:03"}}
+
+```
+
+对 container2 使用相同命令。 如果你安装了python， 你可以美化输出信息。
+
+```bash
+$ docker inspect --format=''  container2 | python -m json.tool
+
+{
+    "bridge": {
+        "NetworkID":"7ea29fc1412292a2d7bba362f9253545fecdfa8ce9a6e37dd10ba8bee7129812",
+        "EndpointID": "0099f9efb5a3727f6a554f176b1e96fca34cae773da68b3b6a26d046c12cb365",
+        "Gateway": "172.17.0.1",
+        "GlobalIPv6Address": "",
+        "GlobalIPv6PrefixLen": 0,
+        "IPAMConfig": null,
+        "IPAddress": "172.17.0.3",
+        "IPPrefixLen": 16,
+        "IPv6Gateway": "",
+        "MacAddress": "02:42:ac:11:00:03"
+    },
+    "isolated_nw": {
+        "NetworkID":"1196a4c5af43a21ae38ef34515b6af19236a3fc48122cf585e3f3054d509679b",
+        "EndpointID": "11cedac1810e864d6b1589d92da12af66203879ab89f4ccd8c8fdaa9b1c48b1d",
+        "Gateway": "172.25.0.1",
+        "GlobalIPv6Address": "",
+        "GlobalIPv6PrefixLen": 0,
+        "IPAMConfig": null,
+        "IPAddress": "172.25.0.2",
+        "IPPrefixLen": 16,
+        "IPv6Gateway": "",
+        "MacAddress": "02:42:ac:19:00:02"
+    }
+}
+
+```
+
+你可以发现 container2 加入了两个网络。 bridge 是在创建时候加入的， isolated_nw 是之后指定加入的。
+
+![https://docs.docker.com/engine/userguide/networking/images/working.png](https://docs.docker.com/engine/userguide/networking/images/working.png)
+
+本例中的 container3， 使用 ` docker run ` 命令来凝结到了 isolated_nw 网络， 因此没有加入 ` bridge ` 网络。
+
+使用 ` attach ` 命令进入 container2，并检查网络堆栈信息。
+
+```bash
+$ docker attach container2
+
+```
+
+如果你查看了容器的网络堆栈信息，你应该会看到网络网络接口。 一个用于默认bridge网络， 一个用于 isolated_nw 网络。
+
+```bash
+/ # ifconfig
+eth0      Link encap:Ethernet  HWaddr 02:42:AC:11:00:03  
+          inet addr:172.17.0.3  Bcast:0.0.0.0  Mask:255.255.0.0
+          inet6 addr: fe80::42:acff:fe11:3/64 Scope:Link
+          UP BROADCAST RUNNING MULTICAST  MTU:9001  Metric:1
+          RX packets:8 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:8 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:0
+          RX bytes:648 (648.0 B)  TX bytes:648 (648.0 B)
+
+eth1      Link encap:Ethernet  HWaddr 02:42:AC:15:00:02  
+          inet addr:172.25.0.2  Bcast:0.0.0.0  Mask:255.255.0.0
+          inet6 addr: fe80::42:acff:fe19:2/64 Scope:Link
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:8 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:8 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:0
+          RX bytes:648 (648.0 B)  TX bytes:648 (648.0 B)
+
+lo        Link encap:Local Loopback  
+          inet addr:127.0.0.1  Mask:255.0.0.0
+          inet6 addr: ::1/128 Scope:Host
+          UP LOOPBACK RUNNING  MTU:65536  Metric:1
+          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:0
+          RX bytes:0 (0.0 B)  TX bytes:0 (0.0 B)
+
+```
+
+在自定义中 isolated_nw 网络中， docker嵌入式DNS服务器实现了容器主机名解析。 在container2中，可以ping container3的主机名。
+
+```bash
+/ # ping -w 4 container3
+PING container3 (172.25.3.3): 56 data bytes
+64 bytes from 172.25.3.3: seq=0 ttl=64 time=0.070 ms
+64 bytes from 172.25.3.3: seq=1 ttl=64 time=0.080 ms
+64 bytes from 172.25.3.3: seq=2 ttl=64 time=0.080 ms
+64 bytes from 172.25.3.3: seq=3 ttl=64 time=0.097 ms
+
+--- container3 ping statistics ---
+4 packets transmitted, 4 packets received, 0% packet loss
+round-trip min/avg/max = 0.070/0.081/0.097 ms
+
+```
+
+这种方法不适用默认的`bridge`网络。 container1和container2属于默认网络。 docker在该网络上不支持自动发现。 由于此，ping container1的会失败，除非你在 `/etc/hosts`配置对应关系。
+
+ping container1 的地址成功：
+
+```bash
+/ # ping -w 4 172.17.0.2
+PING 172.17.0.2 (172.17.0.2): 56 data bytes
+64 bytes from 172.17.0.2: seq=0 ttl=64 time=0.095 ms
+64 bytes from 172.17.0.2: seq=1 ttl=64 time=0.075 ms
+64 bytes from 172.17.0.2: seq=2 ttl=64 time=0.072 ms
+64 bytes from 172.17.0.2: seq=3 ttl=64 time=0.101 ms
+
+--- 172.17.0.2 ping statistics ---
+4 packets transmitted, 4 packets received, 0% packet loss
+round-trip min/avg/max = 0.072/0.085/0.101 ms
+
+```
+
+使用 ` docker run --link ` 命令可以连接 container1 和 container2 ， 该命令允许连个容器之间使用主机名或IP地址相互访问。
+
+断开 congtainer2 并保持起运行使用 ` CTRL-p CTRL-q `。
+
+在本例中， container2 连接了两个网络，因此可以与 container1 和 container3 进行交互。 但是 container3 和 container1 不在同一个网络中，因此不能相互交互。 测试，现在连接到 container3 并尝试ping container1 的ip地址。
+
+```
+$ docker attach container3
+
+/ # ping 172.17.0.2
+PING 172.17.0.2 (172.17.0.2): 56 data bytes
+^C
+--- 172.17.0.2 ping statistics ---
+10 packets transmitted, 0 packets received, 100% packet loss
+
+```
+
+不论容器是否处于运行状态都可以加入到一个网络中。但是 ` docker network inspect ` 只能显示运行中的容器的信息。
+
