@@ -1,6 +1,9 @@
 # 使用网络命令
 work-with-network-commands
 
+> octowhale 2016-10-20
+> [ 原文 ](https://docs.docker.com/engine/userguide/networking/work-with-networks/)
+
 本节提供了一些例子讲述 `network` 子命令的用法。
 
 + docker network create
@@ -171,6 +174,68 @@ bafb0c808c53        redis               "/entrypoint.sh redis"   4 seconds ago  
 
 ## 连接容器
 
+你可以是容器动态的连接到一个或多个网络。这些网络可以使用相同或不同的网络驱动。一旦连接成功，容器便可以使用其他容器的IP地址或容器名访问对方。
 
+对于 ` overlay ` 网络或自定义插件网路而言，支持多主机互连。在不同主机上启动的容器加入到相同的多主机网络可以通过这种方式交互。
 
+举例说明，创建两个容器：
 
+```bash
+$ docker run -itd --name=container1 busybox
+
+18c062ef45ac0c026ee48a83afa39d25635ee5f02b58de4abc8f467bcaa28731
+
+$ docker run -itd --name=container2 busybox
+
+498eaaaf328e1018042c04b2de04036fc04719a6e39a097a4f4866043a2c2152
+
+```
+
+创建一个隔离的 ` bridge ` 网络用于测试，
+
+```bash
+
+$ docker network create -d bridge --subnet 172.25.0.0/16 isolated_nw
+
+06a62f1c73c4e3107c0f555b7a5f163309827bfbbf999840166065a8f35455a8
+
+```
+
+把 ` container2 ` 加入刚才创建的网络，并使用 inspect 命令查看网络信息：
+
+```bash
+$ docker network connect isolated_nw container2
+
+$ docker network inspect isolated_nw
+
+[
+    {
+        "Name": "isolated_nw",
+        "Id": "06a62f1c73c4e3107c0f555b7a5f163309827bfbbf999840166065a8f35455a8",
+        "Scope": "local",
+        "Driver": "bridge",
+        "IPAM": {
+            "Driver": "default",
+            "Config": [
+                {
+                    "Subnet": "172.25.0.0/16",
+                    "Gateway": "172.25.0.1/16"
+                }
+            ]
+        },
+        "Containers": {
+            "90e1f3ec71caf82ae776a827e0712a68a110a3f175954e5bd4222fd142ac9428": {
+                "Name": "container2",
+                "EndpointID": "11cedac1810e864d6b1589d92da12af66203879ab89f4ccd8c8fdaa9b1c48b1d",
+                "MacAddress": "02:42:ac:19:00:02",
+                "IPv4Address": "172.25.0.2/16",
+                "IPv6Address": ""
+            }
+        },
+        "Options": {}
+    }
+]
+
+```
+
+https://docs.docker.com/engine/userguide/networking/work-with-networks/
