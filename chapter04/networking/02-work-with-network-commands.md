@@ -390,3 +390,111 @@ PING 172.17.0.2 (172.17.0.2): 56 data bytes
 
 不论容器是否处于运行状态都可以加入到一个网络中。但是 ` docker network inspect ` 只能显示运行中的容器的信息。
 
+### 在自定义网络中连接容器
+
+在上例中，在自定义网络 `isolate_nw` 中， container2 可以解析 container3 的主机名。 但是在默认bridge网络中不能自动发现。这样设计是为了保持与[传统链路(legacy line)](https://docs.docker.com/engine/userguide/networking/default_network/dockerlinks/) 的向后兼容。
+
+` legacy link ` 为默认`bridge`网络提供了4种主要功能。
+
++ 主机名解析
++ 主机名别名，用于容器链接，使用 ` --link=CONTAINER-NAME:ALIAS ` 指定。
++ 安全容器链接 （使用 ` --icc=false ` 隔离 ）
++ 环境变量注入
+
+对于非默认用户自定义网络，例如之前提到的 ` isolated_nw ` ，相较于上面4种功能，在没有额外配置的情况下， dockers网络提供了：
+
++ 使用DNS自动主机名解析
++ 在网络中为容器提供了自动安全隔离环境
++ 可以动态的添加或退出多个网络
++ 支持 ` --link ` 选项，为容器提供主机名互联。
+
+继续之前的例子，在 `isolated_nw`网络中创建容器` container4 `，并使用 ` --link ` 命令提供额外主机名解析的别名，供相同网络中的其他容器链接。
+(这里有点拗口，原文为：create another container container4 in isolated_nw with --link to provide additional name resolution using alias for other containers in the same network.)
+
+```bash
+$ docker run --network=isolated_nw -itd --name=container4 --link container5:c5 busybox
+
+01b5df970834b77a9eadbaff39051f237957bd35c4c56f11193e0594cfd5117c
+
+```
+
+在` --link container4 ` 的帮助下，我们可以使用别名 ` c5 ` 访问container5。
+
+请注意，在我们创建 container4的时候，指定连接的名为 container5的容器还没被创建。 这是一个介于默认bridge网络中的*legacy link*与自定义网络新*link*功能之间的不同之处。 *legacy link*本质上是静态的，且难于通过别名绑定容器，另外他不允许连接的容器重启。 自定义网络中的*link*功能本质上是动态的，并支持连接的容器重启，包括容忍容器的ip地址变更。
+
+现在，我们另外启动一台名为 ` container5 ` 的容器， 使用 c4 连接 ` container4 ` 。
+
+```bash
+$ docker run --network=isolated_nw -itd --name=container5 --link container4:c4 busybox
+
+72eccf2208336f31e9e33ba327734125af00d1e1d2657878e2ee8154fbb23c7a
+
+```
+
+和预料中的一样， ` container4 ` 可以通过容器名、别名连接 ` container5 `。 反之亦然。
+
+```bash
+
+$ docker attach container4
+
+/ # ping -w 4 c5
+PING c5 (172.25.0.5): 56 data bytes
+64 bytes from 172.25.0.5: seq=0 ttl=64 time=0.070 ms
+64 bytes from 172.25.0.5: seq=1 ttl=64 time=0.080 ms
+64 bytes from 172.25.0.5: seq=2 ttl=64 time=0.080 ms
+64 bytes from 172.25.0.5: seq=3 ttl=64 time=0.097 ms
+
+--- c5 ping statistics ---
+4 packets transmitted, 4 packets received, 0% packet loss
+round-trip min/avg/max = 0.070/0.081/0.097 ms
+
+/ # ping -w 4 container5
+PING container5 (172.25.0.5): 56 data bytes
+64 bytes from 172.25.0.5: seq=0 ttl=64 time=0.070 ms
+64 bytes from 172.25.0.5: seq=1 ttl=64 time=0.080 ms
+64 bytes from 172.25.0.5: seq=2 ttl=64 time=0.080 ms
+64 bytes from 172.25.0.5: seq=3 ttl=64 time=0.097 ms
+
+--- container5 ping statistics ---
+4 packets transmitted, 4 packets received, 0% packet loss
+round-trip min/avg/max = 0.070/0.081/0.097 ms
+
+```
+
+```bash
+$ docker attach container5
+
+/ # ping -w 4 c4
+PING c4 (172.25.0.4): 56 data bytes
+64 bytes from 172.25.0.4: seq=0 ttl=64 time=0.065 ms
+64 bytes from 172.25.0.4: seq=1 ttl=64 time=0.070 ms
+64 bytes from 172.25.0.4: seq=2 ttl=64 time=0.067 ms
+64 bytes from 172.25.0.4: seq=3 ttl=64 time=0.082 ms
+
+--- c4 ping statistics ---
+4 packets transmitted, 4 packets received, 0% packet loss
+round-trip min/avg/max = 0.065/0.070/0.082 ms
+
+/ # ping -w 4 container4
+PING container4 (172.25.0.4): 56 data bytes
+64 bytes from 172.25.0.4: seq=0 ttl=64 time=0.065 ms
+64 bytes from 172.25.0.4: seq=1 ttl=64 time=0.070 ms
+64 bytes from 172.25.0.4: seq=2 ttl=64 time=0.067 ms
+64 bytes from 172.25.0.4: seq=3 ttl=64 time=0.082 ms
+
+--- container4 ping statistics ---
+4 packets transmitted, 4 packets received, 0% packet loss
+round-trip min/avg/max = 0.065/0.070/0.082 ms
+```
+
+与 legacy link 功能相似， new link 别名本地化到了容器中。 对于`--link`之外的容器而言，别名是没有意义的。
+
+同样值得注意的是，如果一个容器属于多个网络，那么连接别名被限制在给定网络中。进容器可以在不同网络间使用别名。
+
+继续我们的案例， 创建另外一个网络，命名为 ` local_alias `
+
+```bash
+$ docker network create -d bridge --subnet 172.26.0.0/24 local_alias
+76b7dc932e037589e6553f59f76008e5b76fa069638cd39776b890607f567aaa
+
+```
