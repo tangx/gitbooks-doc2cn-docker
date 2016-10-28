@@ -39,7 +39,8 @@ docker官方文档，中文汉化项目
   + [01 理解镜像,容器和存储驱动器](./chapter04/docker_storage_drivers/01-understand-images-containers-and-storage-drivers.md)
 + C04S02 networking
   + [01 理解容器网络](./chapter04/networking/01-understand-docker-container-networks.md)
-  + [01 使用网络命令](./chapter04/networking/02-work-with-network-commands.md)
+  + [02 使用网络命令](./chapter04/networking/02-work-with-network-commands.md)
+  + [03 多主机网络--overlay网络](./chapter04/networking/03-get-started-with-multi-host-networking.md)
 
 
 ## 第5章 管理使用手册
