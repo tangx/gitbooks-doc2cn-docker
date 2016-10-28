@@ -392,7 +392,7 @@ PING 172.17.0.2 (172.17.0.2): 56 data bytes
 
 ### 在自定义网络中连接容器
 
-在上例中，在自定义网络 `isolate_nw` 中， container2 可以解析 container3 的主机名。 但是在默认bridge网络中不能自动发现。这样设计是为了保持与[传统链路(legacy line)](https://docs.docker.com/engine/userguide/networking/default_network/dockerlinks/) 的向后兼容。
+在上例中，在自定义网络 `isolated_nw` 中， container2 可以解析 container3 的主机名。 但是在默认bridge网络中不能自动发现。这样设计是为了保持与[传统链路(legacy line)](https://docs.docker.com/engine/userguide/networking/default_network/dockerlinks/) 的向后兼容。
 
 ` legacy link ` 为默认`bridge`网络提供了4种主要功能。
 
@@ -496,5 +496,356 @@ round-trip min/avg/max = 0.065/0.070/0.082 ms
 ```bash
 $ docker network create -d bridge --subnet 172.26.0.0/24 local_alias
 76b7dc932e037589e6553f59f76008e5b76fa069638cd39776b890607f567aaa
+
+```
+
+现在将container4和container5加入到刚才创建的网络 `local_alias`中。
+
+```bash
+$ docker network connect --link container5:foo local_alias container4
+$ docker network connect --link container4:bar local_alias container5
+
+```
+
+```bash
+
+$ docker attach container4
+
+/ # ping -w 4 foo
+PING foo (172.26.0.3): 56 data bytes
+64 bytes from 172.26.0.3: seq=0 ttl=64 time=0.070 ms
+64 bytes from 172.26.0.3: seq=1 ttl=64 time=0.080 ms
+64 bytes from 172.26.0.3: seq=2 ttl=64 time=0.080 ms
+64 bytes from 172.26.0.3: seq=3 ttl=64 time=0.097 ms
+
+--- foo ping statistics ---
+4 packets transmitted, 4 packets received, 0% packet loss
+round-trip min/avg/max = 0.070/0.081/0.097 ms
+
+/ # ping -w 4 c5
+PING c5 (172.25.0.5): 56 data bytes
+64 bytes from 172.25.0.5: seq=0 ttl=64 time=0.070 ms
+64 bytes from 172.25.0.5: seq=1 ttl=64 time=0.080 ms
+64 bytes from 172.25.0.5: seq=2 ttl=64 time=0.080 ms
+64 bytes from 172.25.0.5: seq=3 ttl=64 time=0.097 ms
+
+--- c5 ping statistics ---
+4 packets transmitted, 4 packets received, 0% packet loss
+round-trip min/avg/max = 0.070/0.081/0.097 ms
+```
+
+可以看到，在不同的网络中ping别名都成功了。现在将container5从isolated_nw中断开，并观察结果。
+
+```
+$ docker network disconnect isolated_nw container5
+
+$ docker attach container4
+
+/ # ping -w 4 c5
+ping: bad address 'c5'
+
+/ # ping -w 4 foo
+PING foo (172.26.0.3): 56 data bytes
+64 bytes from 172.26.0.3: seq=0 ttl=64 time=0.070 ms
+64 bytes from 172.26.0.3: seq=1 ttl=64 time=0.080 ms
+64 bytes from 172.26.0.3: seq=2 ttl=64 time=0.080 ms
+64 bytes from 172.26.0.3: seq=3 ttl=64 time=0.097 ms
+
+--- foo ping statistics ---
+4 packets transmitted, 4 packets received, 0% packet loss
+round-trip min/avg/max = 0.070/0.081/0.097 ms
+
+```
+
+总而言之，用户定义网络中的新链路功能提供了旧有链路的所有优点，同时避免了遗留链路的大多数众所周知的问题。
+
+与传统链接相比，一个显着的缺失功能是注入环境变量。尽管非常有用，但环境变量注入本质上是静态的，必须在容器启动时注入。 如果不付出巨大努力，是运行中的容器注入环境变量的。因此，注入与 ` docker network ` 并不匹配，后者提供了一种动态方法来连接或断开容器的网络。
+
+
+### 网络范围别名
+
+links提供的私有主机名解析是本地化到某个容器中的，而网络范围别名(network-scoped alias)为容器提供了一种使用别名方式，从而被同网络范围中的其他容器发现。 与链接别名不同，链接别名由服务的使用者定义，网络范围别名由向网络提供服务的容器定义。
+
+> 即，网络范围别名(network-scoped alias)是容器在网络中的别名。通过 ` --network-alias ` 指定。
+> ` --link ` 指定别名存在于两个容器之间。
+
+继续之前的案例， 在 ` isolated_nw ` 网络中创建另一个容器，并指定网络别名。
+
+```bash
+$ docker run --network=isolated_nw -itd --name=container6 --network-alias app busybox
+
+8ebe6767c1e0361f27433090060b33200aac054a68476c3be87ef4005eb1df17
+```
+
+```bash
+$ docker attach container4
+
+/ # ping -w 4 app
+PING app (172.25.0.6): 56 data bytes
+64 bytes from 172.25.0.6: seq=0 ttl=64 time=0.070 ms
+64 bytes from 172.25.0.6: seq=1 ttl=64 time=0.080 ms
+64 bytes from 172.25.0.6: seq=2 ttl=64 time=0.080 ms
+64 bytes from 172.25.0.6: seq=3 ttl=64 time=0.097 ms
+
+--- app ping statistics ---
+4 packets transmitted, 4 packets received, 0% packet loss
+round-trip min/avg/max = 0.070/0.081/0.097 ms
+
+/ # ping -w 4 container6
+PING container5 (172.25.0.6): 56 data bytes
+64 bytes from 172.25.0.6: seq=0 ttl=64 time=0.070 ms
+64 bytes from 172.25.0.6: seq=1 ttl=64 time=0.080 ms
+64 bytes from 172.25.0.6: seq=2 ttl=64 time=0.080 ms
+64 bytes from 172.25.0.6: seq=3 ttl=64 time=0.097 ms
+
+--- container6 ping statistics ---
+4 packets transmitted, 4 packets received, 0% packet loss
+round-trip min/avg/max = 0.070/0.081/0.097 ms
+```
+
+现在将container6连接到 ` local_alias ` 中，对为容器设置一个不同的别名。
+
+```bash
+$ docker network connect --alias scoped-app local_alias container6
+```
+
+container6 在 isolated_nw 中的别名为 `app`，在 local_alias 中的别名为 `scopd-app`。
+
+分别从container4(在两个网络中)和container5(只在isolated_nw中)访问container6的别名`scoped-app`。
+
+```bash
+$ docker attach container4
+
+/ # ping -w 4 scoped-app
+PING foo (172.26.0.5): 56 data bytes
+64 bytes from 172.26.0.5: seq=0 ttl=64 time=0.070 ms
+64 bytes from 172.26.0.5: seq=1 ttl=64 time=0.080 ms
+64 bytes from 172.26.0.5: seq=2 ttl=64 time=0.080 ms
+64 bytes from 172.26.0.5: seq=3 ttl=64 time=0.097 ms
+
+--- foo ping statistics ---
+4 packets transmitted, 4 packets received, 0% packet loss
+round-trip min/avg/max = 0.070/0.081/0.097 ms
+
+$ docker attach container5
+
+/ # ping -w 4 scoped-app
+ping: bad address 'scoped-app'
+
+```
+
+如你所见， **网络范围别名的影响范围是别名定义时所在的网络，因此只有那些连接到该网络中的容器才能够访问该别名**。
+
+除了上诉特点外，多个容器可以在同一个网络中共享相同的网络范围别名。 在 isolated_nw 中创建一个 container7 ，并使用与container6相同的别名。
+
+```bash
+$ docker run --network=isolated_nw -itd --name=container7 --network-alias app busybox
+
+3138c678c123b8799f4c7cc6a0cecc595acbdfa8bf81f621834103cd4f504554
+
+```
+
+当多个容器共享同一个别名时，别名的主机名解析会指向其中一个容器（通常来说是第一个使用该别名的容器）。当该别名容器关机或退出网络时，下一个使用别名的容器将会被解析。
+
+从container4中ping别名` app `，接着关闭container6，并验证 别名` app ` 是否解析到了 congtainer7。
+
+```bash
+$ docker attach container4
+
+/ # ping -w 4 app
+PING app (172.25.0.6): 56 data bytes
+64 bytes from 172.25.0.6: seq=0 ttl=64 time=0.070 ms
+64 bytes from 172.25.0.6: seq=1 ttl=64 time=0.080 ms
+64 bytes from 172.25.0.6: seq=2 ttl=64 time=0.080 ms
+64 bytes from 172.25.0.6: seq=3 ttl=64 time=0.097 ms
+
+--- app ping statistics ---
+4 packets transmitted, 4 packets received, 0% packet loss
+round-trip min/avg/max = 0.070/0.081/0.097 ms
+
+$ docker stop container6
+
+$ docker attach container4
+
+/ # ping -w 4 app
+PING app (172.25.0.7): 56 data bytes
+64 bytes from 172.25.0.7: seq=0 ttl=64 time=0.095 ms
+64 bytes from 172.25.0.7: seq=1 ttl=64 time=0.075 ms
+64 bytes from 172.25.0.7: seq=2 ttl=64 time=0.072 ms
+64 bytes from 172.25.0.7: seq=3 ttl=64 time=0.101 ms
+
+--- app ping statistics ---
+4 packets transmitted, 4 packets received, 0% packet loss
+round-trip min/avg/max = 0.072/0.085/0.101 ms
+
+```
+
+## 断开容器网络
+
+使用 ` docker network disconnect ` 命令可以指定容器退出某个网络。
+
+```bash
+
+$ docker network disconnect isolated_nw container2
+
+$ docker inspect --format=''  container2 | python -m json.tool
+
+{
+    "bridge": {
+        "NetworkID":"7ea29fc1412292a2d7bba362f9253545fecdfa8ce9a6e37dd10ba8bee7129812",
+        "EndpointID": "9e4575f7f61c0f9d69317b7a4b92eefc133347836dd83ef65deffa16b9985dc0",
+        "Gateway": "172.17.0.1",
+        "GlobalIPv6Address": "",
+        "GlobalIPv6PrefixLen": 0,
+        "IPAddress": "172.17.0.3",
+        "IPPrefixLen": 16,
+        "IPv6Gateway": "",
+        "MacAddress": "02:42:ac:11:00:03"
+    }
+}
+
+
+$ docker network inspect isolated_nw
+
+[
+    {
+        "Name": "isolated_nw",
+        "Id": "06a62f1c73c4e3107c0f555b7a5f163309827bfbbf999840166065a8f35455a8",
+        "Scope": "local",
+        "Driver": "bridge",
+        "IPAM": {
+            "Driver": "default",
+            "Config": [
+                {
+                    "Subnet": "172.21.0.0/16",
+                    "Gateway": "172.21.0.1/16"
+                }
+            ]
+        },
+        "Containers": {
+            "467a7863c3f0277ef8e661b38427737f28099b61fa55622d6c30fb288d88c551": {
+                "Name": "container3",
+                "EndpointID": "dffc7ec2915af58cc827d995e6ebdc897342be0420123277103c40ae35579103",
+                "MacAddress": "02:42:ac:19:03:03",
+                "IPv4Address": "172.25.3.3/16",
+                "IPv6Address": ""
+            }
+        },
+        "Options": {}
+    }
+]
+
+```
+
+一旦容器从某个网络中退出， 该容器便再也不能与所退出网络中的其他容器通信。本例中， isolated_nw网络中的container2 便不再能与container3通信。
+
+```bash
+
+$ docker attach container2
+
+/ # ifconfig
+eth0      Link encap:Ethernet  HWaddr 02:42:AC:11:00:03  
+          inet addr:172.17.0.3  Bcast:0.0.0.0  Mask:255.255.0.0
+          inet6 addr: fe80::42:acff:fe11:3/64 Scope:Link
+          UP BROADCAST RUNNING MULTICAST  MTU:9001  Metric:1
+          RX packets:8 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:8 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:0
+          RX bytes:648 (648.0 B)  TX bytes:648 (648.0 B)
+
+lo        Link encap:Local Loopback  
+          inet addr:127.0.0.1  Mask:255.0.0.0
+          inet6 addr: ::1/128 Scope:Host
+          UP LOOPBACK RUNNING  MTU:65536  Metric:1
+          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:0
+          RX bytes:0 (0.0 B)  TX bytes:0 (0.0 B)
+
+/ # ping container3
+PING container3 (172.25.3.3): 56 data bytes
+^C
+--- container3 ping statistics ---
+2 packets transmitted, 0 packets received, 100% packet loss
+
+```
+
+对于，container2依旧具有`bridge`网络的完全链接。
+
+```bash
+/ # ping container1
+PING container1 (172.17.0.2): 56 data bytes
+64 bytes from 172.17.0.2: seq=0 ttl=64 time=0.119 ms
+64 bytes from 172.17.0.2: seq=1 ttl=64 time=0.174 ms
+^C
+--- container1 ping statistics ---
+2 packets transmitted, 2 packets received, 0% packet loss
+round-trip min/avg/max = 0.119/0.146/0.174 ms
+/ #
+
+```
+
+在实际生产环境中，多主机网络中可能会遇到docker daemon意外重启，这将导致daemon不能清楚过期的连接端点(endpoints)。例如，当新建容器的容器名与过期端点的名相同是，可能触发错误 ` container already connected to network ` 。 为了清理这些过期端点，首先需要删除容器，然后使用命令 ` docker network disconnect -f ` 强制从网络中断开该端点。 一旦端点被清楚，容器可以再次连接到该网络中。
+
+```bash
+$ docker run -d --name redis_db --network multihost redis
+
+ERROR: Cannot start container bc0b19c089978f7845633027aa3435624ca3d12dd4f4f764b61eac4c0610f32e: container already connected to network multihost
+
+$ docker rm -f redis_db
+
+$ docker network disconnect -f multihost redis_db
+
+$ docker run -d --name redis_db --network multihost redis
+
+7d986da974aeea5e9f7aca7e510bdb216d58682faa83a9040c2f2adc0544795a
+
+```
+
+
+## 删除网络
+
+当网络中的所有容器都关闭并退出网络后，你可以删除网络。
+
+```bash
+$ docker network disconnect isolated_nw container3 
+```
+
+```bash
+$ docker network inspect isolated_nw
+
+[
+    {
+        "Name": "isolated_nw",
+        "Id": "06a62f1c73c4e3107c0f555b7a5f163309827bfbbf999840166065a8f35455a8",
+        "Scope": "local",
+        "Driver": "bridge",
+        "IPAM": {
+            "Driver": "default",
+            "Config": [
+                {
+                    "Subnet": "172.21.0.0/16",
+                    "Gateway": "172.21.0.1/16"
+                }
+            ]
+        },
+        "Containers": {},
+        "Options": {}
+    }
+]
+
+$ docker network rm isolated_nw
+
+```
+
+列出所有网络确认 ` isolated_nw ` 被删除了。
+
+```bash
+$ docker network ls
+
+NETWORK ID          NAME                DRIVER
+72314fa53006        host                host                
+f7ab26d71dbd        bridge              bridge              
+0f32e83e61ac        none                null  
 
 ```
