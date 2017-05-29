@@ -13,6 +13,7 @@ docker官方文档，中文汉化项目
   + [设置docker daemon为开机启动](./chapter01/01-install-docker-with-centos.md#设置docker-daemon为开机启动)
   + [卸载](./chapter01/01-install-docker-with-centos.md#卸载)
 + [C01S02 使用二进制文件安装docker](./chapter01/02-installation-from-binaries.md)
++ [C01S03 在 CentOS6.X 上安装docker](./chapter01/03-install-docker-with-centos6.x.md)
 
 
 ## 第2章 使用Docker
