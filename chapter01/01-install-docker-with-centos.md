@@ -1,4 +1,4 @@
-#第一章 docker服务的安装、启动
+# 第一章 docker服务的安装、启动
 
 > ` octowhale@github - 2016/09/23 16:37 `
 
@@ -8,7 +8,7 @@ Docker在 CentOS7.X上运行。Docker可能在其他EL7的兼容版本中成功�
 
 本文将指导你使用Docker-managed发布的安装包进行安装。这样可以确保你安装的docker是最近版本的。
 
-##系统环境要求
+## 系统环境要求
 
 docker必须运行在64-bit的系统上，对于CentOS的版本号并没有特别要求。另外，如果需要在CentOS上安装，内核版本必须高于3.10。
 
@@ -25,7 +25,7 @@ $ uname -r
 
 最后，我们建议你完全升级你的系统。请记住，你的系统应该完全修复可能存在的内核bug。任何已经被报告的内核bug可能已经在上一个内核包中被修复。
 
-##安装
+## 安装
 
 可以通过以下两种方法安装Docker Engine。使用 `yum`包管理器；使用 `curl`命令访问 `get.docker.com`网站。后者将获得一个安装脚本，该脚本将通过` yum `管理器安装Docker。
 
@@ -112,7 +112,7 @@ For more examples and ideas, visit:
 ```
 
 
-###使用脚本安装
+### 使用脚本安装
 
 3. 执行安装脚本
 
@@ -126,7 +126,7 @@ $ curl -fsSL https://get.docker.com/ | sh
 该脚本会添加` docker.repo `仓库并安装docker。
 
 
-##创建一个docker用户组
+## 创建一个docker用户组
 
 ` docker `守护进程现在绑定了一个Unix Socket，取代了之前的TCP端口。 默认情况下，这个Socket的属主用户是` root `并且用户可以通过` sudo `进行访问。因此，` docker `守护进程总是通过` root `用户运行。     
 
@@ -156,7 +156,7 @@ $ sudo usermod -aG docker your_username
 
 
 
-##设置docker daemon为开机启动
+## 设置docker daemon为开机启动
 
 确保docker会在开机时候启动，需要执行以下命令     
 
@@ -171,7 +171,7 @@ sudo systemctl enabld docker.service
 
 如果你需要使用HTTP代理，那么需要为Docker执行文件另外设置一个目录或者分区，或者使用其他定制选项。阅读关于系统的文章并学习[customize your Systemd Docker daemon options](https://docs.docker.com/engine/admin/systemd/)。
 
-##卸载
+## 卸载
 
 你可以通` yum ` 卸载docker软件
 
