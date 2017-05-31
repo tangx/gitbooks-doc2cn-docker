@@ -19,7 +19,7 @@ docker官方文档，中文汉化项目
 ## 第2章 使用Docker
 + [C02S01 理解镜像与容器](./chapter02/01-learn-about-images-containers.md)
 + [C02S02 查找并运行镜像](./chapter02/02-find-and-run-the-whalesay-image.md)
-+ C02S03 创建自定义镜像
++ [C02S03 创建自定义镜像](./chapter02/03-build-your-own-image-with-dockerfile.md)
   + [C02S03.1 使用dockerfile创建镜像](./chapter02/03-build-your-own-image-with-dockerfile.md)
   + [C02S03.2 使用commit提交容器创建镜像](./chapter02/03-build-your-own-image-with-commit.md)
   + [C02S03.3 使用import导入备份创建镜像](./chapter02/03-build-your-own-image-with-import.md)
@@ -50,4 +50,6 @@ docker官方文档，中文汉化项目
   + [C05S03 在守护程序停止时保持容器运行](./chapter05/03-keep-containers-alive-during-daemon-downtime.md)
   + [C05S04 使用systemd控制和配置docker](./chapter05/04-control-and-configure-docker-with-systemd.md)
   + [C05S04 格式化输出信息参考](./chapter05/05-formatting-reference.md)
-  
+
+## docker 应用篇
++ [shadowsocks 镜像](./chapter_application/01-shadowsocks-image.md)
