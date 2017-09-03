@@ -5,16 +5,11 @@ docker官方文档，中文汉化项目
 [项目简介](README.md)
 
 ## 第1章 安装运行与卸载
-+ [C01S01 在CentOS7上使用二进制包安装](./chapter01/01-install-docker-with-centos.md)
-  + [系统环境要求](./chapter01/01-install-docker-with-centos.md#系统环境要求)
-  + [安装](./chapter01/01-install-docker-with-centos.md#安装)
-    + [使用yum安装](./chapter01/01-install-docker-with-centos.md#使用yum安装)
-    + [使用脚本安装](./chapter01/01-install-docker-with-centos.md#使用脚本安装)
-  + [设置docker daemon为开机启动](./chapter01/01-install-docker-with-centos.md#设置docker-daemon为开机启动)
-  + [卸载](./chapter01/01-install-docker-with-centos.md#卸载)
-+ [C01S02 使用二进制文件安装docker](./chapter01/02-installation-from-binaries.md)
-+ [C01S03 在 CentOS6.X 上安装docker](./chapter01/03-install-docker-with-centos6.x.md)
 
++ [C01S01 在CentOS7上使用二进制包安装](./chapter01/01-install-docker-with-centos.md)
++ [C01S02 使用二进制文件安装Docker1.11及以后版本](./chapter01/02-installation-from-binaries.md)
++ [C01S03 在 CentOS6.X 上安装docker](./chapter01/03-install-docker-with-centos6.x.md)
++ [C01S04 在 CentOS7 上安装 Docker CE](./chapter01/04-get-docker-ce-for-centos.md)
 
 ## 第2章 使用Docker
 + [C02S01 理解镜像与容器](./chapter02/01-learn-about-images-containers.md)
